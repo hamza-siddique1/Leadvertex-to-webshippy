@@ -8,23 +8,23 @@ use App\Http\Controllers\DoctorVisitController;
 use App\Http\Controllers\FacebookWebhookController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalesRenderController;
 use App\Http\Controllers\SzamlaController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\WebhookController;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WebshopPriceController;
 use App\Http\Controllers\ZappierController;
 use App\Notifications\LeadVertexNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Notification;
-use Spatie\DiscordAlerts\Facades\DiscordAlert;
+use Illuminate\Support\Facades\Route;
 use Spatie\Browsershot\Browsershot;
+use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Route::get('/optimize', function () {
 });
 
 Route::get('/migrate/fresh', function () {
-    //Artisan::call('migrate:fresh --seed');
+    Artisan::call('migrate:fresh --seed');
     dump('Migration done successfully');
 });
 
