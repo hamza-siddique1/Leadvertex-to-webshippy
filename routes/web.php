@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveoController;
 use App\Http\Controllers\DoctorVisitController;
 use App\Http\Controllers\FacebookWebhookController;
+use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\OrderController;
@@ -244,3 +245,8 @@ Route::get('/invoice-preview', function () {
 });
 
 Route::view('calculator', 'pages.calculator.index');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/invoices', [FileManagerController::class, 'index'])->name('files.index');
+    Route::get('/invoices/download', [FileManagerController::class, 'download'])->name('files.download');
+});

@@ -82,7 +82,7 @@ $role = Auth()->user()->role;
                 <ul id="doctor-visits"
                     class="sidebar-dropdown list-unstyled collapse {{ request()->is('doctor-visits*') ? 'show' : '' }}"
                     data-parent="#sidebar">
-                
+
                     <li class="sidebar-item {{ request()->is('doctor-visits') ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('doctor-visits.index') }}">
                             <i class="align-middle" data-feather="list"></i>
@@ -93,6 +93,25 @@ $role = Auth()->user()->role;
                         <a class="sidebar-link" href="{{ route('doctor-visits.create') }}">
                             <i class="align-middle" data-feather="plus-square"></i>
                             <span class="align-middle">Add New Visit</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+            <li class="sidebar-item {{ request()->is('invoices*') ? 'active' : '' }}">
+                <a data-target="#invoices" data-toggle="collapse" class="sidebar-link collapsed">
+                    <i class="align-middle" data-feather="file-text"></i>
+                    <span class="align-middle">Invoices</span>
+                </a>
+                <ul id="invoices"
+                    class="sidebar-dropdown list-unstyled collapse {{ request()->is('invoices*') ? 'show' : '' }}"
+                    data-parent="#sidebar">
+
+                    <li class="sidebar-item {{ request()->is('invoices') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('files.index') }}">
+                            <i class="align-middle" data-feather="file-text"></i>
+                            <span class="align-middle">All Invoices</span>
                         </a>
                     </li>
 

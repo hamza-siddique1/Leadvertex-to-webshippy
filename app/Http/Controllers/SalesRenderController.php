@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\GoogleDriveService;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Notification;
 use App\Notifications\LeadVertexNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 
 class SalesRenderController extends Controller
 {
@@ -60,7 +59,7 @@ GQL;
 
         $cacheKey = 'order_' . $order_id;
 
-        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($order_id, $query) {
+        return Cache::remember($cacheKey, now()->addMinutes(20), function () use ($order_id, $query) {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . env('GRAPHQL_API_TOKEN'),
@@ -222,7 +221,7 @@ GQL;
     $dateFolder = Carbon::now()->format('d-m-Y');
     $fileName = sprintf('Invoice_%s.pdf', $data['order_id']);
 
-    $localFolderPath = storage_path('app/google/' . $dateFolder);
+    $localFolderPath = storage_path('app/invoices/' . $dateFolder);
     $localFilePath = $localFolderPath . '/' . $fileName;
 
     \File::ensureDirectoryExists($localFolderPath);
@@ -231,17 +230,6 @@ GQL;
     Pdf::loadHtml($html)
         ->setOption(['isRemoteEnabled' => true])
         ->save($localFilePath);
-
-    $googleDriveService = new GoogleDriveService();
-    $driveFolderId = $googleDriveService->getOrCreateFolder($dateFolder, env('GOOGLE_DRIVE_FOLDER_ID'));
-
-    $googleDriveService->uploadFile(
-        $localFilePath,
-        $fileName,
-        $driveFolderId
-    );
-
-    dump('Invoice uploaded to Google Drive');
 }
 
     public function update_order_status($orderId, $statusId, $attempt = 1)
