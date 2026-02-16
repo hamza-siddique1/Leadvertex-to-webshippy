@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Jobs\GenerateAndUploadInvoice;
 use App\Models\APILog;
 use App\Models\Order;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
+use App\Notifications\LeadVertexNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\LeadVertexNotification;
+use Illuminate\Support\Str;
 
 class DeliveoController extends Controller
 {
@@ -98,10 +98,17 @@ class DeliveoController extends Controller
                 }
 
                 GenerateAndUploadInvoice::dispatch($order_id);
+
+                $dateFolder = now()->format('d-m-Y');
+                $fileName = 'Invoice_' . $order_id . '.pdf';
+
                 $data_telegram['to'] = 'salesrender';
                 $data_telegram['msg'] = sprintf("Order %s sent to Deliveo: %s", $order_id, $shipmentId);
-                $data_telegram['order_id'] = sprintf("https://asperminw.com/invoice/%s", $order_id);
-                dump($data_telegram['msg']);
+                $data_telegram['order_id'] = sprintf(
+                    "https://asperminw.com/admin/files/download?folder=%s&file=%s",
+                    $dateFolder,
+                    $fileName
+                );
                 Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_telegram));
             }
 

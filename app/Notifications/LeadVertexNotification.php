@@ -48,7 +48,7 @@ class LeadVertexNotification extends Notification
             ->content($msg['msg']);
 
         if (!empty($msg['order_id'])) {
-            $telegramMessage->button('View Invoice', $msg['order_id']);
+            $telegramMessage->button('Download Invoice', $msg['order_id']);
         }
 
         return $telegramMessage;

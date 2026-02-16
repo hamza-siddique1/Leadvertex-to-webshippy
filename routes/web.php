@@ -21,10 +21,8 @@ use App\Http\Controllers\ZappierController;
 use App\Notifications\LeadVertexNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
-use Spatie\Browsershot\Browsershot;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 /*
