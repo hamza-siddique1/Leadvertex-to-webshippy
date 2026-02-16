@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Running Total Calculator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='15' fill='%23667eea'/><rect x='15' y='15' width='70' height='25' rx='5' fill='white'/><circle cx='27' cy='55' r='8' fill='white'/><circle cx='50' cy='55' r='8' fill='white'/><circle cx='73' cy='55' r='8' fill='white'/><circle cx='27' cy='75' r='8' fill='white'/><circle cx='50' cy='75' r='8' fill='white'/><circle cx='73' cy='75' r='8' fill='white'/></svg>" type="image/svg+xml">
     <style>
         * {
             margin: 0;
