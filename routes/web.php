@@ -243,3 +243,4 @@ Route::get('/invoice-preview', function () {
         ->download('invoice.pdf');
 });
 
+Route::view('calculator', 'pages.calculator.index');
