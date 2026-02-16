@@ -105,7 +105,7 @@ class DeliveoController extends Controller
                 $data_telegram['to'] = 'salesrender';
                 $data_telegram['msg'] = sprintf("Order %s sent to Deliveo: %s", $order_id, $shipmentId);
                 $data_telegram['order_id'] = sprintf(
-                    "https://asperminw.com/admin/files/download?folder=%s&file=%s",
+                    "https://asperminw.com/invoices/download?folder=%s&file=%s",
                     $dateFolder,
                     $fileName
                 );
