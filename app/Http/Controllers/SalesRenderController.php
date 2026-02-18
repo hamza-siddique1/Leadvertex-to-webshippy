@@ -79,24 +79,21 @@ GQL;
       // Initialize data array
       $data = [
         'invoice_id' => $order['id'] ?? null,
-        'seller_name' => 'Axel Pharmatech Magyarország Kft.',
-        'seller_address_line1' => '1134 Budapest',
-        'seller_address_line2' => 'Lőportár utca 12. fszt',
+        'seller_name' => 'Supreme Pharmatech Europe s.r.o.',
+        'seller_address_line1' => '945 01 Komárno',
+        'seller_address_line2' => 'Senný trh 3116/7',
         'seller_city_zip' => '1082',
-        'seller_country' => 'Magyarország',
-        'seller_tax_id' => '29191888-2-41',
-        'seller_company_reg_id' => '01-09-382870',
-        'page_number_info' => '1/1 Oldal',
+        'seller_country' => 'Slovakia',
+        'seller_tax_id' => 'SK2122214820',
+        'seller_company_reg_id' => '56139471',
         'footer_legal_text_1' => 'A számla tartalma mindenben megfelel a hatályos',
         'footer_legal_text_2' => 'törvényekben foglaltaknak',
-        'billing_service_promo_1' => 'Ez a számla Billingo online számlázó programmal készült.',
-        'billing_service_promo_2' => 'Gyors és élvezetes számlázás bármikor, bárhonnan: billingo.hu',
         'buyer_name' => '',
         'buyer_phone' => '',
         'buyer_address_line1' => '',
         'buyer_address_line2' => '',
         'buyer_city_zip' => '',
-        'buyer_country' => 'Magyarország',
+        'buyer_country' => 'Slovakia',
         'invoice_date' => '',
         'due_date' => '',
         'fulfillment_date' => '',
@@ -229,6 +226,9 @@ GQL;
     $html = view('pages.template.invoice', $data)->render();
     Pdf::loadHtml($html)
         ->setOption(['isRemoteEnabled' => true])
+        ->setOption('isHtml5ParserEnabled', true)
+        ->setOption('isPhpEnabled', true)
+        ->setPaper('a4')
         ->save($localFilePath);
 }
 

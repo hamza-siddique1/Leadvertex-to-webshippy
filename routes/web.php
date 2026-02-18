@@ -20,6 +20,7 @@ use App\Http\Controllers\WebshopPriceController;
 use App\Http\Controllers\ZappierController;
 use App\Notifications\LeadVertexNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
@@ -233,19 +234,176 @@ Route::get('/debug', [App\Http\Controllers\TelescopeSearchController::class, 'in
 
 Route::get('/invoice-preview', function () {
 
-    $url = 'https://asperminw.com/template/Invoice.html';
-    $url = 'https://asperminw.com/template/Invoice2.html';
-    $html = file_get_contents($url);
+    $orderid = 34085;
 
+    $sr = new SalesRenderController();
+
+    $order = $sr->get_order_info($orderid);
+
+      // Initialize data array
+      $data = [
+        'invoice_id' => $order['id'] ?? null,
+        'seller_name' => 'Supreme Pharmatech Europe s.r.o.',
+        'seller_address_line1' => '945 01 Komárno',
+        'seller_address_line2' => 'Senný trh 3116/7',
+        'seller_city_zip' => '1082',
+        'seller_country' => 'Slovakia',
+        'seller_tax_id' => 'SK2122214820',
+        'seller_company_reg_id' => '56139471',
+        'footer_legal_text_1' => 'A számla tartalma mindenben megfelel a hatályos',
+        'footer_legal_text_2' => 'törvényekben foglaltaknak',
+        'buyer_name' => '',
+        'buyer_phone' => '',
+        'buyer_address_line1' => '',
+        'buyer_address_line2' => '',
+        'buyer_city_zip' => '',
+        'buyer_country' => 'Slovakia',
+        'invoice_date' => '',
+        'due_date' => '',
+        'fulfillment_date' => '',
+        'order_id' => '',
+        'item_name_1' => '',
+        'item_sub_description_1' => '',
+        'item_quantity_1' => 0,
+        'item_unit_price_net_1' => '0,00',
+        'item_total_price_net_1' => '0,00',
+        'item_vat_rate_1' => 27,
+        'item_total_price_gross_1' => '0,00',
+        'subtotal_net' => 0,
+        'vat_rate_summary' => 27,
+        'total_vat_amount' => 0,
+        'grand_total_summary' => 0,
+        'grand_total_amount' => '0',
+      ];
+
+      // Safe extraction of buyer name
+      $nameField = $order['data']['humanNameFields'][0]['value'] ?? null;
+      if ($nameField) {
+          $data['buyer_name'] = trim(($nameField['lastName'] ?? '') . ' ' . ($nameField['firstName'] ?? ''));
+      }
+
+      // Phone number
+      $data['buyer_phone'] = $order['data']['phoneFields'][0]['value']['raw'] ?? null;
+
+      // Address
+      $address = $order['data']['addressFields'][0]['value'] ?? [];
+      if (!empty($address)) {
+          $data['buyer_address_line1'] = $address['city'] ?? '';
+          $data['region'] = $address['region'] ?? '';
+          $data['buyer_address_line2'] = implode(' ', array_filter([
+              $address['address_1'] ?? '',
+              $address['address_2'] ?? '',
+          ]));
+          $data['buyer_city_zip'] = $address['postcode'] ?? '';
+          $data['buyer_country'] = $address['country'] ?? 'Magyarország';
+      }
+
+      // Dates
+      $createdAt = $order['createdAt'] ?? null;
+      if ($createdAt) {
+          $data['invoice_date'] = date('Y. m. d.', strtotime($createdAt));
+          $data['due_date'] = date('Y. m. d.', strtotime($createdAt));
+      }
+
+      $data['fulfillment_date'] = null;
+      $fulfillmentDate = $order['data']['dateTimeFields'][0]['value'] ?? null;
+      if ($fulfillmentDate) {
+          $data['fulfillment_date'] = date('Y. m. d.', strtotime($fulfillmentDate));
+      }
+
+      // Order ID
+      $data['order_id'] = $order['id'] ?? null;
+
+      // Item (if available)
+      // Items loop
+    $items = $order['cart']['items'] ?? [];
+    $promotions = $order['cart']['promotions'] ?? [];
+    $allItems = array_merge($items, $promotions);
+
+    $subtotalNet = 0;
+    $totalVat = 0;
+    $grandTotal = 0;
+    $vatRate = 0.27;
+
+    $itemsData = [];
+
+    foreach ($items as $item) {
+      $name = $item['sku']['item']['name'] ?? 'Unknown Item';
+      $quantity = $item['quantity'] ?? 1;
+      $unitPrice = $item['pricing']['unitPrice'] ?? 0;
+      $totalPrice = $item['pricing']['totalPrice'] ?? 0;
+      $net = round($totalPrice / (1 + $vatRate), 2);
+      //$vat = $totalPrice - $net;
+
+      $itemsData[] = [
+        'name' => $name,
+        'description' => '',
+        'quantity' => $quantity,
+        'unit_price_net' => number_format($unitPrice , 2, ',', ''),
+        'total_price_net' => number_format($net, 2, ',', ''),
+        'vat_rate' => 27,
+        'total_price_gross' => number_format($totalPrice, 2, ',', ''),
+      ];
+
+//      $subtotalNet += $net;
+//      $totalVat += $vat;
+      $grandTotal += $totalPrice;
+    }
+
+    foreach ($promotions as $promotion) {
+      $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
+
+      foreach ($promotion['items'] as $item) {
+          $quantity = $item['promotionItem'] ?? 1;
+          $unitPrice = $item['pricing']['unitPrice'] ?? 0;
+          $totalPrice = $unitPrice * $quantity;
+          $net = round($totalPrice / (1 + $vatRate), 2);
+          //$vat = $totalPrice - $net;
+
+          $itemsData[] = [
+              'name' => $promotionName,
+              'description' => $promotionName,
+              'quantity' => $quantity,
+              'unit_price_net' => number_format($unitPrice, 2, ',', ''),
+              'total_price_net' => number_format($net, 2, ',', ''),
+              'vat_rate' => 27,
+              'total_price_gross' => number_format($totalPrice, 2, ',', ''),
+          ];
+
+//          $subtotalNet += $net;
+//          $totalVat += $vat;
+          $grandTotal += $totalPrice;
+      }
+    }
+
+    $data['items'] = $itemsData;
+    $data['grand_total'] = $grandTotal;
+
+    $dateFolder = Carbon::now()->format('d-m-Y');
+    $fileName = sprintf('Invoice_%s.pdf', $data['order_id']);
+
+    $localFolderPath = storage_path('app/invoices/' . $dateFolder);
+    $localFilePath = $localFolderPath . '/' . $fileName;
+
+
+    \File::ensureDirectoryExists($localFolderPath);
+
+    $html = view('pages.template.invoice', $data)->render();
     return Pdf::loadHtml($html)
-        ->setOption(['isRemoteEnabled' => true])
-        ->download('invoice.pdf');
+    ->setOption(['isRemoteEnabled' => true])
+    ->stream('invoice.pdf'); // Opens in browser
+
+
 });
 
 Route::view('calculator', 'pages.calculator.index');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/invoices', [FileManagerController::class, 'index'])->name('files.index');
-    Route::get('/invoices/download', [FileManagerController::class, 'download'])->name('files.download');
-    Route::get('/invoices/files/download-folder', [FileManagerController::class, 'downloadFolder'])->name('files.download.folder');
-});
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/invoices', [FileManagerController::class, 'index'])->name('files.index');
+//     Route::get('/invoices/download', [FileManagerController::class, 'download'])->name('files.download');
+//     Route::get('/invoices/files/download-folder', [FileManagerController::class, 'downloadFolder'])->name('files.download.folder');
+// });
+
+
+Route::view('test-template', 'pages.template.test');
+
