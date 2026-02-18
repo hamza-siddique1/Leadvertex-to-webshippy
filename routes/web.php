@@ -45,7 +45,7 @@ Route::get('/optimize', function () {
 });
 
 Route::get('/migrate/fresh', function () {
-    Artisan::call('migrate:fresh --seed');
+    //Artisan::call('migrate:fresh --seed');
     dump('Migration done successfully');
 });
 
