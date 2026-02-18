@@ -37,6 +37,46 @@
         .badge { background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
         .total { margin-bottom: 15px; color: #666; font-size: 14px; }
         .empty-state { text-align: center; padding: 40px; color: #999; }
+
+        .folder-card-wrapper {
+            position: relative;
+        }
+
+        .folder-card {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .folder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .download-folder-btn {
+            display: block;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .download-folder-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -61,6 +101,17 @@
             @endif
         </div>
 
+        <!-- Add this after the breadcrumb and before the total count -->
+        @if($folder && count($files) > 0)
+        <div style="margin-bottom: 20px;">
+            <a href="{{ route('files.download.folder', ['folder' => $folder]) }}"
+            class="download-btn"
+            onclick="return confirm('Download all {{ count($files) }} files in this folder as ZIP?')">
+                📦 Download All Files as ZIP ({{ count($files) }} files)
+            </a>
+        </div>
+        @endif
+
         <div class="total">
             <strong>📂 Folders:</strong> {{ count($folders) }} |
             <strong>📄 Files:</strong> {{ count($files) }}
@@ -74,14 +125,23 @@
         @if(count($folders) > 0)
             <div class="folders-grid" id="foldersGrid">
                 @foreach($folders as $folderItem)
-                <a href="{{ route('files.index', ['folder' => $folderItem['path']]) }}" class="folder-card">
-                    <div class="folder-icon">📁</div>
-                    <div class="folder-name">{{ $folderItem['name'] }}</div>
-                    <div class="folder-info">
-                        {{ $folderItem['file_count'] }} file(s)<br>
-                        {{ $folderItem['modified'] }}
-                    </div>
-                </a>
+                <div class="folder-card-wrapper">
+                    <a href="{{ route('files.index', ['folder' => $folderItem['path']]) }}" class="folder-card">
+                        <div class="folder-icon">📁</div>
+                        <div class="folder-name">{{ $folderItem['name'] }}</div>
+                        <div class="folder-info">
+                            {{ $folderItem['file_count'] }} file(s)<br>
+                            {{ $folderItem['modified'] }}
+                        </div>
+                    </a>
+                    @if($folderItem['file_count'] > 0)
+                    <a href="{{ route('files.download.folder', ['folder' => $folderItem['path']]) }}"
+                    class="download-folder-btn"
+                    onclick="return confirm('Download all {{ $folderItem['file_count'] }} files in this folder as ZIP?')">
+                        📦 Download ZIP ({{ $folderItem['file_count'] }} files)
+                    </a>
+                    @endif
+                </div>
                 @endforeach
             </div>
         @endif

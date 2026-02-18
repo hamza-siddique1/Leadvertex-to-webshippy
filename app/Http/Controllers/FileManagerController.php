@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
+use ZipArchive;
 
 class FileManagerController extends Controller
 {
@@ -56,7 +57,7 @@ class FileManagerController extends Controller
             return strcmp($b['modified'], $a['modified']);
         });
 
-        return view('admin.files', compact('folders', 'files', 'folder'));
+        return view('invoices.index', compact('folders', 'files', 'folder'));
     }
 
     public function download(Request $request)
@@ -84,5 +85,50 @@ class FileManagerController extends Controller
         } else {
             return $bytes . ' bytes';
         }
+    }
+
+    public function downloadFolder(Request $request)
+    {
+        $folder = $request->get('folder', '');
+        $basePath = storage_path('app/invoices');
+        $folderPath = $basePath . ($folder ? '/' . $folder : '');
+
+        if (!File::exists($folderPath) || !File::isDirectory($folderPath)) {
+            abort(404, 'Folder not found');
+        }
+
+        // Get all files in the folder
+        $files = File::allFiles($folderPath);
+
+        if (count($files) === 0) {
+            abort(400, 'Folder is empty');
+        }
+
+        // Create temporary ZIP file
+        $zipFileName = ($folder ? str_replace('/', '_', $folder) : 'invoices') . '.zip';
+        $zipPath = storage_path('app/temp/' . $zipFileName);
+
+        // Create temp directory if it doesn't exist
+        if (!File::exists(storage_path('app/temp'))) {
+            File::makeDirectory(storage_path('app/temp'), 0755, true);
+        }
+
+        // Create ZIP archive
+        $zip = new ZipArchive;
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            // Add all files from folder
+            foreach ($files as $file) {
+                $relativePath = str_replace($folderPath . '/', '', $file->getPathname());
+                $zip->addFile($file->getPathname(), $relativePath);
+            }
+
+            $zip->close();
+
+            // Download and delete temp file after sending
+            return Response::download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+        }
+
+        abort(500, 'Could not create ZIP file');
     }
 }
