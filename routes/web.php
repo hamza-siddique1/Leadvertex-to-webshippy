@@ -398,12 +398,8 @@ Route::get('/invoice-preview', function () {
 
 Route::view('calculator', 'pages.calculator.index');
 
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/invoices', [FileManagerController::class, 'index'])->name('files.index');
-//     Route::get('/invoices/download', [FileManagerController::class, 'download'])->name('files.download');
-//     Route::get('/invoices/files/download-folder', [FileManagerController::class, 'downloadFolder'])->name('files.download.folder');
-// });
-
-
-Route::view('test-template', 'pages.template.test');
-
+Route::middleware(['auth'])->group(function () {
+    Route::get('/invoices', [FileManagerController::class, 'index'])->name('files.index');
+    Route::get('/invoices/download', [FileManagerController::class, 'download'])->name('files.download');
+    Route::get('/invoices/files/download-folder', [FileManagerController::class, 'downloadFolder'])->name('files.download.folder');
+});
