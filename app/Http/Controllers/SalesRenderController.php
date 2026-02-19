@@ -147,71 +147,63 @@ GQL;
           $data['fulfillment_date'] = date('Y. m. d.', strtotime($fulfillmentDate));
       }
 
-      // Order ID
       $data['order_id'] = $order['id'] ?? null;
 
-      // Item (if available)
-      // Items loop
     $items = $order['cart']['items'] ?? [];
     $promotions = $order['cart']['promotions'] ?? [];
-    $allItems = array_merge($items, $promotions);
 
-    $subtotalNet = 0;
-    $totalVat = 0;
     $grandTotal = 0;
-    $vatRate = 0.27;
+    $totalNet = 0;
+    $totalVat = 0;
+
+    $vatRate = 0.23;
+    $vatMultiplier = 1 + $vatRate;
 
     $itemsData = [];
 
+    $processItem = function ($name, $quantity, $unitPriceGross) use (
+        &$itemsData, &$grandTotal, &$totalNet, &$totalVat, $vatRate, $vatMultiplier
+    ) {
+
+        $totalGross = $unitPriceGross * $quantity;
+        $net = round($totalGross / $vatMultiplier, 2);
+        $vat = round($totalGross - $net, 2);
+
+        $itemsData[] = [
+            'name' => $name,
+            'description' => '',
+            'quantity' => $quantity,
+            'total_price_net' => number_format($net, 2, ',', ''),
+            'total_price_gross' => number_format($totalGross, 2, ',', ''),
+        ];
+
+        $grandTotal += $totalGross;
+        $totalNet += $net;
+        $totalVat += $vat;
+    };
+
     foreach ($items as $item) {
-      $name = $item['sku']['item']['name'] ?? 'Unknown Item';
-      $quantity = $item['quantity'] ?? 1;
-      $unitPrice = $item['pricing']['unitPrice'] ?? 0;
-      $totalPrice = $item['pricing']['totalPrice'] ?? 0;
-      $net = round($totalPrice / (1 + $vatRate), 2);
-      //$vat = $totalPrice - $net;
-
-      $itemsData[] = [
-        'name' => $name,
-        'description' => '',
-        'quantity' => $quantity,
-        'unit_price_net' => number_format($unitPrice , 2, ',', ''),
-        'total_price_net' => number_format($net, 2, ',', ''),
-        'vat_rate' => 27,
-        'total_price_gross' => number_format($totalPrice, 2, ',', ''),
-      ];
-
-//      $subtotalNet += $net;
-//      $totalVat += $vat;
-      $grandTotal += $totalPrice;
+        $processItem(
+            $item['sku']['item']['name'] ?? 'Unknown Item',
+            $item['quantity'] ?? 1,
+            $item['pricing']['unitPrice'] ?? 0
+        );
     }
 
     foreach ($promotions as $promotion) {
-      $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
+        $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
 
-      foreach ($promotion['items'] as $item) {
-          $quantity = $item['promotionItem'] ?? 1;
-          $unitPrice = $item['pricing']['unitPrice'] ?? 0;
-          $totalPrice = $unitPrice * $quantity;
-          $net = round($totalPrice / (1 + $vatRate), 2);
-          //$vat = $totalPrice - $net;
-
-          $itemsData[] = [
-              'name' => $promotionName,
-              'description' => $promotionName,
-              'quantity' => $quantity,
-              'unit_price_net' => number_format($unitPrice, 2, ',', ''),
-              'total_price_net' => number_format($net, 2, ',', ''),
-              'vat_rate' => 27,
-              'total_price_gross' => number_format($totalPrice, 2, ',', ''),
-          ];
-
-//          $subtotalNet += $net;
-//          $totalVat += $vat;
-          $grandTotal += $totalPrice;
-      }
+        foreach ($promotion['items'] as $item) {
+            $processItem(
+                $promotionName,
+                $item['promotionItem'] ?? 1,
+                $item['pricing']['unitPrice'] ?? 0
+            );
+        }
     }
 
+    $data['vat'] = round($grandTotal * ($vatRate / (1 + $vatRate)), 2);
+    $data['net_amount'] = $grandTotal - $data['vat'];
     $data['items'] = $itemsData;
     $data['grand_total'] = $grandTotal;
 
