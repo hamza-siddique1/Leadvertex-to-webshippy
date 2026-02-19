@@ -74,9 +74,8 @@ GQL;
 
     public function create_invoice($orderid)
     {
-       $order = $this->get_order_info($orderid);
+      $order = $this->get_order_info($orderid);
 
-      // Initialize data array
       $data = [
         'invoice_id' => $order['id'] ?? null,
         'seller_name' => 'Supreme Pharmatech Europe s.r.o.',
@@ -96,20 +95,8 @@ GQL;
         'buyer_country' => 'Slovakia',
         'invoice_date' => '',
         'due_date' => '',
-        'fulfillment_date' => '',
         'order_id' => '',
-        'item_name_1' => '',
-        'item_sub_description_1' => '',
-        'item_quantity_1' => 0,
-        'item_unit_price_net_1' => '0,00',
-        'item_total_price_net_1' => '0,00',
-        'item_vat_rate_1' => 27,
-        'item_total_price_gross_1' => '0,00',
-        'subtotal_net' => 0,
-        'vat_rate_summary' => 27,
-        'total_vat_amount' => 0,
-        'grand_total_summary' => 0,
-        'grand_total_amount' => '0',
+        'has_delivery_fee' => false,
       ];
 
       // Safe extraction of buyer name
@@ -199,6 +186,13 @@ GQL;
                 $item['promotionItem'] ?? 1,
                 $item['pricing']['unitPrice'] ?? 0
             );
+        }
+    }
+
+    foreach ($itemsData as $item) {
+        if (($item['name'] ?? '') === 'Delivery fee') {
+            $data['has_delivery_fee'] = true;
+            break;
         }
     }
 

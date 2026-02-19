@@ -366,12 +366,19 @@
         <div class="summary-section">
             <table class="summary-table">
                 <tr>
-                    <td class="summary-label">Nettó összeg:</td>
-                    <td class="summary-value">{{ $net_amount }} Ft</td>
+                    <td class="summary-label">Összesen:</td>
+                    <td class="summary-value">{{ number_format($grand_total, 0, ',', ' ') }} Ft</td>
                 </tr>
+
+                @if($has_delivery_fee)
+                    <tr>
+                        <td class="summary-label">Szállítási díj:</td>
+                        <td class="summary-value">{{ number_format(2500, 0, ',', ' ') }} Ft</td>
+                    </tr>
+                @endif
                 <tr>
                     <td class="summary-label">ÁFA (23%):</td>
-                    <td class="summary-value">{{ $vat }} Ft</td>
+                    <td class="summary-value">{{ number_format($grand_total * 0.23, 0, ',', ' ') }} Ft</td>
                 </tr>
                 <tr class="total-row">
                     <td class="summary-label">Fizetendő végösszeg:</td>
@@ -381,19 +388,6 @@
         </div>
 
         <div class="clear"></div>
-
-        <!-- Payment Information (Optional) -->
-        {{-- Uncomment if you want to add payment details
-        <div class="payment-info">
-            <h4>Fizetési információ</h4>
-            <p>
-                <strong>Bank neve:</strong> Example Bank<br>
-                <strong>Bankszámlaszám:</strong> 12345678-12345678-12345678<br>
-                <strong>IBAN:</strong> HU12 1234 5678 1234 5678 1234 5678<br>
-                <strong>SWIFT/BIC:</strong> EXAMPLEHB
-            </p>
-        </div>
-        --}}
 
         <!-- Footer -->
         <div class="footer">

@@ -234,14 +234,13 @@ Route::get('/debug', [App\Http\Controllers\TelescopeSearchController::class, 'in
 
 Route::get('/invoice-preview', function () {
 
-    $orderid = 34085;
+    $orderid = 37575;
 
     $sr = new SalesRenderController();
 
     $order = $sr->get_order_info($orderid);
 
-      // Initialize data array
-      $data = [
+    $data = [
         'invoice_id' => $order['id'] ?? null,
         'seller_name' => 'Supreme Pharmatech Europe s.r.o.',
         'seller_address_line1' => '945 01 Komárno',
@@ -260,20 +259,8 @@ Route::get('/invoice-preview', function () {
         'buyer_country' => 'Slovakia',
         'invoice_date' => '',
         'due_date' => '',
-        'fulfillment_date' => '',
         'order_id' => '',
-        'item_name_1' => '',
-        'item_sub_description_1' => '',
-        'item_quantity_1' => 0,
-        'item_unit_price_net_1' => '0,00',
-        'item_total_price_net_1' => '0,00',
-        'item_vat_rate_1' => 27,
-        'item_total_price_gross_1' => '0,00',
-        'subtotal_net' => 0,
-        'vat_rate_summary' => 27,
-        'total_vat_amount' => 0,
-        'grand_total_summary' => 0,
-        'grand_total_amount' => '0',
+        'has_delivery_fee' => false,
       ];
 
       // Safe extraction of buyer name
@@ -318,64 +305,66 @@ Route::get('/invoice-preview', function () {
       // Items loop
     $items = $order['cart']['items'] ?? [];
     $promotions = $order['cart']['promotions'] ?? [];
-    $allItems = array_merge($items, $promotions);
 
-    $subtotalNet = 0;
-    $totalVat = 0;
     $grandTotal = 0;
-    $vatRate = 0.27;
+    $totalNet = 0;
+    $totalVat = 0;
+
+    $vatRate = 0.23;
+    $vatMultiplier = 1 + $vatRate; // avoid recalculating
 
     $itemsData = [];
 
+    $processItem = function ($name, $quantity, $unitPriceGross) use (
+        &$itemsData, &$grandTotal, &$totalNet, &$totalVat, $vatRate, $vatMultiplier
+    ) {
+
+        $totalGross = $unitPriceGross * $quantity;
+        $net = round($totalGross / $vatMultiplier, 2);
+        $vat = round($totalGross - $net, 2);
+
+        $itemsData[] = [
+            'name' => $name,
+            'description' => '',
+            'quantity' => $quantity,
+            'total_price_net' => number_format($net, 2, ',', ''),
+            'total_price_gross' => number_format($totalGross, 2, ',', ''),
+        ];
+
+        $grandTotal += $totalGross;
+        $totalNet += $net;
+        $totalVat += $vat;
+    };
+
     foreach ($items as $item) {
-      $name = $item['sku']['item']['name'] ?? 'Unknown Item';
-      $quantity = $item['quantity'] ?? 1;
-      $unitPrice = $item['pricing']['unitPrice'] ?? 0;
-      $totalPrice = $item['pricing']['totalPrice'] ?? 0;
-      $net = round($totalPrice / (1 + $vatRate), 2);
-      //$vat = $totalPrice - $net;
-
-      $itemsData[] = [
-        'name' => $name,
-        'description' => '',
-        'quantity' => $quantity,
-        'unit_price_net' => number_format($unitPrice , 2, ',', ''),
-        'total_price_net' => number_format($net, 2, ',', ''),
-        'vat_rate' => 27,
-        'total_price_gross' => number_format($totalPrice, 2, ',', ''),
-      ];
-
-//      $subtotalNet += $net;
-//      $totalVat += $vat;
-      $grandTotal += $totalPrice;
+        $processItem(
+            $item['sku']['item']['name'] ?? 'Unknown Item',
+            $item['quantity'] ?? 1,
+            $item['pricing']['unitPrice'] ?? 0
+        );
     }
-
+// dump($itemsData);
     foreach ($promotions as $promotion) {
-      $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
+        $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
 
-      foreach ($promotion['items'] as $item) {
-          $quantity = $item['promotionItem'] ?? 1;
-          $unitPrice = $item['pricing']['unitPrice'] ?? 0;
-          $totalPrice = $unitPrice * $quantity;
-          $net = round($totalPrice / (1 + $vatRate), 2);
-          //$vat = $totalPrice - $net;
-
-          $itemsData[] = [
-              'name' => $promotionName,
-              'description' => $promotionName,
-              'quantity' => $quantity,
-              'unit_price_net' => number_format($unitPrice, 2, ',', ''),
-              'total_price_net' => number_format($net, 2, ',', ''),
-              'vat_rate' => 27,
-              'total_price_gross' => number_format($totalPrice, 2, ',', ''),
-          ];
-
-//          $subtotalNet += $net;
-//          $totalVat += $vat;
-          $grandTotal += $totalPrice;
-      }
+        foreach ($promotion['items'] as $item) {
+            $processItem(
+                $promotionName,
+                $item['promotionItem'] ?? 1,
+                $item['pricing']['unitPrice'] ?? 0
+            );
+        }
     }
 
+    foreach ($itemsData as $item) {
+        if (($item['name'] ?? '') === 'Delivery fee') {
+            $data['has_delivery_fee'] = true;
+            break;
+        }
+    }
+
+    $data['vat'] = round($grandTotal * ($vatRate / (1 + $vatRate)), 2);
+    $data['net_amount'] = $grandTotal - $data['vat'];
     $data['items'] = $itemsData;
     $data['grand_total'] = $grandTotal;
 
@@ -385,7 +374,7 @@ Route::get('/invoice-preview', function () {
     $localFolderPath = storage_path('app/invoices/' . $dateFolder);
     $localFilePath = $localFolderPath . '/' . $fileName;
 
-
+// dump($data);
     \File::ensureDirectoryExists($localFolderPath);
 
     $html = view('pages.template.invoice', $data)->render();
