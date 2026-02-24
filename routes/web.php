@@ -234,7 +234,7 @@ Route::get('/debug', [App\Http\Controllers\TelescopeSearchController::class, 'in
 
 Route::get('/invoice-preview', function () {
 
-    $orderid = 37575;
+    $orderid = 37267;
 
     $sr = new SalesRenderController();
 
@@ -329,6 +329,7 @@ Route::get('/invoice-preview', function () {
             'quantity' => $quantity,
             'total_price_net' => number_format($net, 2, ',', ''),
             'total_price_gross' => number_format($totalGross, 2, ',', ''),
+            'unit_price' => number_format($unitPriceGross, 2, ',', ''),
         ];
 
         $grandTotal += $totalGross;
@@ -336,24 +337,26 @@ Route::get('/invoice-preview', function () {
         $totalVat += $vat;
     };
 
+// dump($itemsData);
+    foreach ($promotions as $promotion) {
+        $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
+
+        $quantity = $promotion['quantity'];
+        foreach ($promotion['items'] as $item) {
+            $processItem(
+                $promotionName,
+                $quantity ?? 1,
+                $item['pricing']['unitPrice'] ?? 0
+            );
+        }
+    }
+
     foreach ($items as $item) {
         $processItem(
             $item['sku']['item']['name'] ?? 'Unknown Item',
             $item['quantity'] ?? 1,
             $item['pricing']['unitPrice'] ?? 0
         );
-    }
-// dump($itemsData);
-    foreach ($promotions as $promotion) {
-        $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
-
-        foreach ($promotion['items'] as $item) {
-            $processItem(
-                $promotionName,
-                $item['promotionItem'] ?? 1,
-                $item['pricing']['unitPrice'] ?? 0
-            );
-        }
     }
 
     foreach ($itemsData as $item) {
@@ -378,6 +381,7 @@ Route::get('/invoice-preview', function () {
     \File::ensureDirectoryExists($localFolderPath);
 
     $html = view('pages.template.invoice', $data)->render();
+    // return $html;
     return Pdf::loadHtml($html)
     ->setOption(['isRemoteEnabled' => true])
     ->stream('invoice.pdf'); // Opens in browser

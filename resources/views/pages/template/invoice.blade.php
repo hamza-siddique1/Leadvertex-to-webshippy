@@ -121,11 +121,6 @@
             font-weight: 600;
         }
 
-        /* Items Table */
-        .items-section {
-            margin: 30px 0;
-        }
-
         .section-title {
             font-size: 14px;
             font-weight: bold;
@@ -138,7 +133,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         thead {
@@ -179,7 +174,6 @@
 
         /* Summary Section */
         .summary-section {
-            margin-top: 30px;
             width: 350px;
             float: right;
         }
@@ -233,7 +227,7 @@
         }
 
         .footer {
-            margin-top: 60px;
+            margin-top: 10px;
             padding-top: 20px;
             border-top: 2px solid #e0e0e0;
             text-align: center;
@@ -344,19 +338,24 @@
                 <thead>
                     <tr>
                         <th style="width: 50%;">Megnevezés</th>
+                        <th style="width: 15%;" class="right">Egységár</th>
                         <th style="width: 15%;" class="right">Mennyiség</th>
-                        <th style="width: 17.5%;" class="right">Összeg (bruttó)</th>
+                        <th style="width: 17.5%;" class="right">Nettó ár</th>
+                        <th style="width: 17.5%;" class="right">ÁFA</th>
+                        <th style="width: 17.5%;" class="right">Bruttó összeg</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($items as $item)
-                        @if($item['name'] !== 'Delivery fee')
                             <tr>
                                 <td>{{ $item['name'] }}</td>
+                                <td class="right">{{ $item['unit_price'] }}</td>
                                 <td class="right">{{ $item['quantity'] }}</td>
+                                <td class="right">{{ $item['total_price_net'] }}</td>
+                                <td class="right">23%</td>
                                 <td class="right">{{ $item['total_price_gross'] }} Ft</td>
                             </tr>
-                        @endif
+
                     @endforeach
                 </tbody>
             </table>
@@ -367,18 +366,18 @@
             <table class="summary-table">
                 <tr>
                     <td class="summary-label">Összesen:</td>
-                    <td class="summary-value">{{ number_format($grand_total, 0, ',', ' ') }} Ft</td>
+                    <td class="summary-value">{{ number_format($net_amount, 0, ',', ' ') }} Ft</td>
                 </tr>
 
                 @if($has_delivery_fee)
-                    <tr>
+                    <!-- <tr>
                         <td class="summary-label">Szállítási díj:</td>
                         <td class="summary-value">{{ number_format(2500, 0, ',', ' ') }} Ft</td>
-                    </tr>
+                    </tr> -->
                 @endif
                 <tr>
                     <td class="summary-label">ÁFA (23%):</td>
-                    <td class="summary-value">{{ number_format($grand_total * 0.23, 0, ',', ' ') }} Ft</td>
+                    <td class="summary-value">{{ number_format($vat, 0, ',', ' ') }} Ft</td>
                 </tr>
                 <tr class="total-row">
                     <td class="summary-label">Fizetendő végösszeg:</td>
@@ -393,7 +392,7 @@
         <div class="footer">
             <p>{{ $footer_legal_text_1 }}</p>
             <p>{{ $footer_legal_text_2 }}</p>
-            <p style="margin-top: 15px;">Köszönjük megrendelését!</p>
+            <p>Köszönjük megrendelését!</p>
         </div>
     </div>
 </body>
