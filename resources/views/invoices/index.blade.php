@@ -109,6 +109,12 @@
             onclick="return confirm('Download all {{ count($files) }} files in this folder as ZIP?')">
                 📦 Download All Files as ZIP ({{ count($files) }} files)
             </a>
+
+            <a href="{{ route('files.print.folder', ['folder' => $folder]) }}"
+            class="download-btn"
+            onclick="window.open(this.href, '_blank', 'width=900,height=700'); return false;">
+                🖨️ Print All PDFs ({{ count($files) }} files)
+            </a>
         </div>
         @endif
 

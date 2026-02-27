@@ -131,4 +131,38 @@ class FileManagerController extends Controller
 
         abort(500, 'Could not create ZIP file');
     }
+
+    public function printFolder(Request $request)
+    {
+        $folder = $request->get('folder', '');
+        $basePath = storage_path('app/invoices');
+        $folderPath = $basePath . ($folder ? '/' . $folder : '');
+
+        if (!File::exists($folderPath) || !File::isDirectory($folderPath)) {
+            abort(404, 'Folder not found');
+        }
+
+        // Get all PDF files in the folder
+        $files = File::files($folderPath);
+        $pdfFiles = [];
+
+        foreach ($files as $file) {
+            if (strtolower($file->getExtension()) === 'pdf') {
+                $pdfFiles[] = [
+                    'name' => $file->getFilename(),
+                    'path' => $folder,
+                    'url' => route('files.download', [
+                        'folder' => $folder,
+                        'file' => $file->getFilename()
+                    ])
+                ];
+            }
+        }
+
+        if (count($pdfFiles) === 0) {
+            abort(400, 'No PDF files found in this folder');
+        }
+
+        return view('invoices.print', compact('pdfFiles', 'folder'));
+    }
 }
