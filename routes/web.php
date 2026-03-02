@@ -397,3 +397,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/invoices/files/download-folder', [FileManagerController::class, 'downloadFolder'])->name('files.download.folder');
     Route::get('/files/folder/print', [FileManagerController::class, 'printFolder'])->name('files.print.folder');
 });
+
+Route::get('check_timezone', function () {
+    $now = now();
+
+    return [
+        'app_timezone' => Config::get('app.timezone'),
+        'php_timezone' => date_default_timezone_get(),
+        'current_time' => $now->toDateTimeString(),
+        'current_iso' => $now->toIso8601String(),
+        'timestamp' => $now->timestamp,
+        'utc_time' => $now->copy()->setTimezone('UTC')->toDateTimeString(),
+        'karachi_time' => $now->copy()->setTimezone('Asia/Karachi')->toDateTimeString(),
+        'new_york_time' => $now->copy()->setTimezone('America/New_York')->toDateTimeString(),
+    ];
+});
