@@ -60,7 +60,7 @@ GQL;
 
         $cacheKey = 'order_' . $order_id;
 
-        return Cache::remember($cacheKey, now()->addMinutes(20), function () use ($order_id, $query) {
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($order_id, $query) {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . env('GRAPHQL_API_TOKEN'),
