@@ -112,8 +112,8 @@
 
             <a href="{{ route('files.print.folder', ['folder' => $folder]) }}"
             class="download-btn"
-            onclick="window.open(this.href, '_blank', 'width=900,height=700'); return false;">
-                🖨️ Print All PDFs ({{ count($files) }} files)
+            >
+                🖨️ Download Single Printable File ({{ count($files) }} files merged)
             </a>
         </div>
         @endif

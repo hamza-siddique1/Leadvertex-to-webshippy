@@ -395,7 +395,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/invoices', [FileManagerController::class, 'index'])->name('files.index');
     Route::get('/invoices/download', [FileManagerController::class, 'download'])->name('files.download');
     Route::get('/invoices/files/download-folder', [FileManagerController::class, 'downloadFolder'])->name('files.download.folder');
-    Route::get('/files/folder/print', [FileManagerController::class, 'printFolder'])->name('files.print.folder');
+    Route::get('/files/folder/print', [FileManagerController::class, 'mergePDFsFolder'])->name('files.print.folder');
 });
 
 Route::get('check_timezone', function () {

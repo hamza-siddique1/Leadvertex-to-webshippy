@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use setasign\Fpdi\Fpdi;
 use ZipArchive;
 
 class FileManagerController extends Controller
@@ -132,37 +133,96 @@ class FileManagerController extends Controller
         abort(500, 'Could not create ZIP file');
     }
 
-    public function printFolder(Request $request)
+    public function mergePDFsFolder(Request $request)
     {
         $folder = $request->get('folder', '');
         $basePath = storage_path('app/invoices');
         $folderPath = $basePath . ($folder ? '/' . $folder : '');
 
+        // Validate folder exists
         if (!File::exists($folderPath) || !File::isDirectory($folderPath)) {
             abort(404, 'Folder not found');
         }
 
-        // Get all PDF files in the folder
+        // Get all PDF files
         $files = File::files($folderPath);
         $pdfFiles = [];
 
         foreach ($files as $file) {
+            // Only include PDF files
             if (strtolower($file->getExtension()) === 'pdf') {
-                $pdfFiles[] = [
-                    'name' => $file->getFilename(),
-                    'path' => $folder,
-                    'url' => route('files.download', [
-                        'folder' => $folder,
-                        'file' => $file->getFilename()
-                    ])
-                ];
+                $pdfFiles[] = $file->getPathname();
             }
         }
 
+        // Check if any PDFs found
         if (count($pdfFiles) === 0) {
             abort(400, 'No PDF files found in this folder');
         }
 
-        return view('invoices.print', compact('pdfFiles', 'folder'));
+        // Sort files by name
+        sort($pdfFiles);
+
+        try {
+            // ========== START MERGING ==========
+
+            // Step 1: Create new FPDI instance
+            $pdf = new Fpdi();
+
+            // Step 2: Loop through each PDF file
+            foreach ($pdfFiles as $pdfFile) {
+
+                // Skip if file doesn't exist
+                if (!file_exists($pdfFile)) {
+                    continue;
+                }
+
+                try {
+                    // Step 3: Load the PDF and count pages
+                    $pageCount = $pdf->setSourceFile($pdfFile);
+
+                    // Step 4: Import each page
+                    for ($i = 1; $i <= $pageCount; $i++) {
+                        // Import page template
+                        $template = $pdf->importPage($i);
+
+                        // Add blank page to merged PDF
+                        $pdf->addPage();
+
+                        // Use the imported page template
+                        $pdf->useTemplate($template);
+                    }
+                } catch (\Exception $e) {
+                    // Log error but continue with other PDFs
+                    \Log::warning('Could not process PDF: ' . $pdfFile);
+                    continue;
+                }
+            }
+
+            // Step 5: Generate PDF as string (not file)
+            $pdfContent = $pdf->Output('S');
+
+            // ========== END MERGING ==========
+
+            // Step 6: Create filename
+            $fileName = ($folder ? str_replace('/', '_', $folder) : 'invoices')
+                        . '_merged_' . '.pdf';
+
+            // Step 7: Return as download
+            return response()->streamDownload(
+                function () use ($pdfContent) {
+                    echo $pdfContent;
+                },
+                $fileName,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
+                ]
+            );
+
+        } catch (\Exception $e) {
+            \Log::error('PDF Merge Error: ' . $e->getMessage());
+            abort(500, 'Could not merge PDF files');
+        }
     }
 }
