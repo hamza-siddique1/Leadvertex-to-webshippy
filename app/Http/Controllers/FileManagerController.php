@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -49,8 +50,11 @@ class FileManagerController extends Controller
         }
 
         // Sort folders by name descending (newest dates first)
-        usort($folders, function($a, $b) {
-            return strcmp($b['name'], $a['name']);
+        usort($folders, function ($a, $b) {
+            return Carbon::createFromFormat('d-m-Y', $b['name'])
+                ->timestamp <=>
+                Carbon::createFromFormat('d-m-Y', $a['name'])
+                ->timestamp;
         });
 
         // Sort files by modified date
