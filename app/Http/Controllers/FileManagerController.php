@@ -206,7 +206,7 @@ class FileManagerController extends Controller
 
             // Step 6: Create filename
             $fileName = ($folder ? str_replace('/', '_', $folder) : 'invoices')
-                        . '_merged_' . '.pdf';
+                        . '_merged' . '.pdf';
 
             // Step 7: Return as download
             return response()->streamDownload(
