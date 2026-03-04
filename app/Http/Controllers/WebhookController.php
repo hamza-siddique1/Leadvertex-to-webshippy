@@ -484,6 +484,9 @@ class WebhookController extends Controller
             ]
         );
 
+        //Just testing for days: Orders will be sent via Schedular at midnight not in real time
+        return response()->json(['success' => true]);
+
         $deliveoController = new DeliveoController();
 
         // ✅ Rule 2: If delivery date is present, send only if status is Sent to deliveo
