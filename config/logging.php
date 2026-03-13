@@ -123,6 +123,11 @@ return [
             'path' => storage_path('logs/webhooks.log'),
         ],
 
+        'resent_orders' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/resent_orders.log'),
+        ],
+
         'webshippy' => [
             'driver' => 'single',
             'path' => storage_path('logs/webshippy.log'),

@@ -29,8 +29,7 @@ class SendNextDayOrdersToDeliveo extends Command
             $targetDate = $today->copy()->addDay()->startOfDay();
         }
 
-        $orders = Order::whereNull('destination_id')
-            ->whereDate('delivery_date', $targetDate)
+        $orders = Order::whereDate('delivery_date', $targetDate)
             ->get();
 
         //$orders = Order::whereNull('destination_id')->whereNotNull('delivery_date')->get();
@@ -61,6 +60,10 @@ class SendNextDayOrdersToDeliveo extends Command
                     'delivery_date' => $deliveryTimestamp,
                 ]
             );
+
+            if($order->destination_id){
+                app('log')->channel('resent_orders')->info(sprintf("Salesrender: %s - Deliveo: %s", $order_id, $order->destination_id));
+            }
 
             $deliveoController->create_shipment($order_data);
             dump("Sending order ID {$order->source_id} with delivery_date: {$order->delivery_date}");
