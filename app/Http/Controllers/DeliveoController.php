@@ -54,7 +54,7 @@ class DeliveoController extends Controller
         $order_id = $data['id'];
         $orderFromDB = Order::where('source_id', $order_id)->first();
         // if($orderFromDB->destination_id != null) return; //already sent to deliveo
-
+//
         $url = sprintf(
             "%spackage/create?licence=%s&api_key=%s",
             env('DELIVEO_BASE_URL'),
