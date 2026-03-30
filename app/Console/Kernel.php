@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('orders:send-today')->dailyAt('02:00');
         $schedule->command('app:sync-deliveo-statuses')->fridays()->at('16:00');
         $schedule->command('app:sync-success-deliveo-statuses')->hourly();
+        //
     }
 
     /**
