@@ -252,5 +252,25 @@ class DeliveoController extends Controller
             return $response->data;
         }
     }
+
+    public function get_all_orders()
+    {
+        $url = sprintf(
+            "%spackage?licence=%s&api_key=%s&filter[picked_up][null]=1&limit=10",
+            env('DELIVEO_BASE_URL'),
+            env('DELIVEO_LICENCE'),
+            env('DELIVEO_API_KEY')
+        );
+
+        $response = Http::timeout(30)->get($url);
+
+        $response = json_decode($response);
+
+        if ($response->type != 'success') {
+            return null;
+        } else {
+            return $response->data;
+        }
+    }
 }
 
