@@ -302,15 +302,15 @@
                     <h3>Számlázási információ</h3>
                     <div class="info-row">
                         <span class="info-label">Számla kelte:</span>
-                        <span class="info-value">{{ $invoice_date }}</span>
+                        <span class="info-value">{{ $invoice_date ?? '' }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Teljesítés dátuma:</span>
-                        <span class="info-value">{{ $fulfillment_date }}</span>
+                        <span class="info-value">{{ $fulfillment_date ?? '' }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Fizetési határidő:</span>
-                        <span class="info-value">{{ $due_date }}</span>
+                        <span class="info-value">{{ $due_date ?? '' }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Rendelésszám:</span>
@@ -322,10 +322,23 @@
                 <div class="info-box">
                     <h3>Vevő adatai</h3>
                     <p>
-                        <strong>{{ $buyer_name }}</strong><br>
-                        {{ $buyer_address_line1 }}<br>
-                        {{ $buyer_address_line2 }}<br>
-                        {{ $buyer_city_zip }}, {{ $region }}
+                        <strong>{{ $buyer_name }}</strong>
+
+                        @if(!empty($buyer_address_line1))
+                            <br>{{ $buyer_address_line1 }}
+                        @endif
+
+                        @if(!empty($buyer_address_line2))
+                            <br>{{ $buyer_address_line2 }}
+                        @endif
+
+                        @if(!empty($buyer_city_zip) || !empty($region))
+                            <br>
+                            {{ $buyer_city_zip }}
+                            @if(!empty($region))
+                                , {{ $region }}
+                            @endif
+                        @endif
                     </p>
                 </div>
             </div>

@@ -2,10 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\SalesRenderController;
+use App\Http\Controllers\DeliveoController;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
 
 class GenerateDeliveoInvoice implements ShouldQueue
 {
@@ -20,7 +19,7 @@ class GenerateDeliveoInvoice implements ShouldQueue
 
     public function handle(): void
     {
-        $controller = new SalesRenderController();
-        $controller->create_invoice($this->orderId);
+        $controller = new DeliveoController();
+        $controller->create_invoice_from_deliveo($this->orderId);
     }
 }
