@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Jobs\GenerateAndUploadInvoice;
 use App\Models\APILog;
+use App\Models\DeliveoOrder;
 use App\Models\Order;
 use App\Notifications\LeadVertexNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
@@ -252,6 +255,130 @@ class DeliveoController extends Controller
         } else {
             return $response->data;
         }
+    }
+
+    public function get_all_orders()
+    {
+        $url = sprintf(
+            "%spackage?licence=%s&api_key=%s&filter[picked_up][null]=1&limit=1",
+            env('DELIVEO_BASE_URL'),
+            env('DELIVEO_LICENCE'),
+            env('DELIVEO_API_KEY')
+        );
+
+        $response = Http::timeout(30)->get($url);
+
+        $response = json_decode($response);
+
+        if ($response->type != 'success') {
+            return null;
+        } else {
+            return $response->data;
+        }
+    }
+
+    public function create_invoice_from_deliveo($deliveoOrderId)
+    {
+        $order = DeliveoOrder::where('deliveo_id', $deliveoOrderId)->first();
+
+        $payload = $order->payload;
+
+        $order_id = !empty($order->order_id)
+            ? $order->order_id
+            : ($payload['deliveo_id'] ?? null);
+
+        $data = [
+            'invoice_id' => $order_id,
+            'seller_name' => 'Supreme Pharmatech Europe s.r.o.',
+            'seller_address_line1' => '94501 Komárno',
+            'seller_address_line2' => 'Senný trh 3116/7',
+            'seller_city_zip' => '1082',
+            'seller_country' => 'Slovakia',
+            'seller_tax_id' => 'SK2122214820',
+            'seller_company_reg_id' => '56139471',
+            'footer_legal_text_1' => 'A számla tartalma mindenben megfelel a hatályos',
+            'footer_legal_text_2' => 'törvényekben foglaltaknak',
+            // Buyer info
+            'buyer_name' => $payload['consignee'] ?? '',
+            'buyer_phone' => $payload['consignee_phone'] ?? '',
+            'buyer_address_line1' => $payload['consignee_address'] ?? '',
+            'buyer_address_line2' => $payload['consignee_apartment'] ?? '',
+            'buyer_city_zip' => $payload['consignee_zip'] . ' ' . ($payload['consignee_city'] ?? ''),
+            'buyer_country' => $payload['consignee_country'] ?? 'HU',
+            'order_id' => $order_id,
+            'has_delivery_fee' => false,
+            'items' => [],
+            'vat' => 0,
+            'net_amount' => 0,
+            'grand_total' => 0,
+        ];
+
+        $invoiceDate = !empty($payload['dispatched'])
+            ? Carbon::parse($payload['dispatched'])->format('Y. m. d.')
+            : Carbon::now()->format('Y. m. d.');
+
+        $data['invoice_date'] = $invoiceDate;
+        $data['due_date'] = $invoiceDate;
+        $data['fulfillment_date'] = $invoiceDate;
+
+        // Process packages as items
+        $grandTotal = 0;
+        $vatRate = 0.23;
+        $vatMultiplier = 1 + $vatRate;
+
+        foreach ($payload['packages'] as $package) {
+            $unitPriceGross = floatval($payload['cod'] ?? 0);
+            $quantity = $package['x'] ?? 1;
+
+            $totalGross = $unitPriceGross * $quantity;
+            $net = round($totalGross / $vatMultiplier, 2);
+            $vat = round($totalGross - $net, 2);
+
+            $data['items'][] = [
+                'name' => $package['customcode'] ?? 'Item',
+                'description' => '',
+                'quantity' => $quantity,
+                'unit_price' => number_format($unitPriceGross, 2, ',', ''),
+                'total_price_net' => number_format($net, 2, ',', ''),
+                'total_price_gross' => number_format($totalGross, 2, ',', ''),
+            ];
+
+            if (($package['customcode'] ?? '') === 'Delivery fee') {
+                $data['has_delivery_fee'] = true;
+            }
+
+            $grandTotal += $totalGross;
+        }
+
+        $data['grand_total'] = $grandTotal;
+        $data['vat'] = round($grandTotal * ($vatRate / (1 + $vatRate)), 2);
+        $data['net_amount'] = $grandTotal - $data['vat'];
+
+        $dateFolder = Carbon::now()->format('d-m-Y');
+        if (!empty($order->order_id)) {
+            $fileName = sprintf('Invoice_Deliveo_%s_%s.pdf', $order_id, $order->order_id);
+        } else {
+            $fileName = sprintf('Invoice_Deliveo_%s.pdf', $order_id);
+        }
+        $localFolderPath = storage_path('app/invoices/' . $dateFolder);
+        $localFilePath = $localFolderPath . '/' . $fileName;
+
+        \File::ensureDirectoryExists($localFolderPath);
+
+        $html = view('pages.template.invoice', $data)->render();
+        Pdf::loadHtml($html)
+            ->setOption(['isRemoteEnabled' => true])
+            ->setOption(['isHtml5ParserEnabled' => true])
+            ->setOption(['isPhpEnabled' => true])
+            ->setPaper('a4')
+            ->save($localFilePath);
+
+        $order->update([
+            'invoice_created_at' => now(),
+            'invoice_path' => 'invoices/' . $dateFolder . '/' . $fileName,
+        ]);
+
+        return $localFilePath;
     }
 }
 
