@@ -29,6 +29,7 @@ class GetAllPendingDeliveoOrders extends Command
             ->get()
             ->keyBy('deliveo_id');
 
+        $hasNewInvoice = false;
         foreach ($pendingOrders as $apiOrder) {
             $existing = $existingOrders->get($apiOrder['deliveo_id']);
 
@@ -49,7 +50,13 @@ class GetAllPendingDeliveoOrders extends Command
                         GenerateDeliveoInvoice::dispatch($order->deliveo_id);
                     }
 
-                    dump(sprintf("Creating invoice for order: %s - %s",  $order->order_id ?? '', $order->deliveo_id ?? ''));
+                    dump(sprintf(
+                        "Creating invoice for order: %s - %s",
+                        $order->order_id ?? '',
+                        $order->deliveo_id ?? ''
+                    ));
+
+                    $hasNewInvoice = true;
                 }
 
             } else {
@@ -61,8 +68,11 @@ class GetAllPendingDeliveoOrders extends Command
                     ]);
 
                 }
-                dump('No pending invoices yet...');
             }
+        }
+
+        if (!$hasNewInvoice) {
+            dump('No pending invoices yet...');
         }
     }
 }
