@@ -61,6 +61,7 @@ class GetAllPendingDeliveoOrders extends Command
                     ]);
 
                 }
+                dump('No pending invoices yet...');
             }
         }
     }
