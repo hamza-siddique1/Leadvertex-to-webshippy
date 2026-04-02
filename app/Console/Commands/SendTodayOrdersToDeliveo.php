@@ -21,13 +21,13 @@ class SendTodayOrdersToDeliveo extends Command
             return;
         }
 
-        if ($today->isFriday()) {
-            // On Friday, target orders with delivery on Monday
-            $targetDate = $today->copy()->addDays(3)->startOfDay();
-        } else {
-            // On other days, send orders scheduled for tomorrow
-            $targetDate = $today->copy()->startOfDay();
-        }
+        // if ($today->isFriday()) {
+        //     // On Friday, target orders with delivery on Monday
+        //     $targetDate = $today->copy()->addDays(3)->startOfDay();
+        // } else {
+        //     // On other days, send orders scheduled for tomorrow
+        //     $targetDate = $today->copy()->startOfDay();
+        // }
 
         $orders = Order::whereDate('delivery_date', $targetDate)
             ->get();
