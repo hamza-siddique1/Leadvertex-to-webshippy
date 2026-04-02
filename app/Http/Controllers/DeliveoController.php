@@ -259,7 +259,7 @@ class DeliveoController extends Controller
     public function get_all_orders()
     {
         $url = sprintf(
-            "%spackage?licence=%s&api_key=%s&filter[picked_up][null]=1&limit=1",
+            "%spackage?licence=%s&api_key=%s&filter[picked_up][null]=1&limit=300",
             env('DELIVEO_BASE_URL'),
             env('DELIVEO_LICENCE'),
             env('DELIVEO_API_KEY')
