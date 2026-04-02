@@ -48,6 +48,8 @@ class GetAllPendingDeliveoOrders extends Command
                     else{
                         GenerateDeliveoInvoice::dispatch($order->deliveo_id);
                     }
+
+                    dump(sprintf("Creating invoice for order: %s - %s",  $order->order_id ?? '', $order->deliveo_id ?? ''));
                 }
 
             } else {
