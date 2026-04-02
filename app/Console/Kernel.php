@@ -21,7 +21,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('orders:send-today')->dailyAt('02:00');
         $schedule->command('app:sync-deliveo-statuses')->fridays()->at('16:00');
         $schedule->command('app:sync-success-deliveo-statuses')->hourly();
-        $schedule->command('get-deliveo-pending-orders')->hourly()->between('10:00', '16:00');
+        $schedule->command('get-deliveo-pending-orders')->everyFifteenMinutes()->between('10:00', '16:00');
     }
 
     /**
