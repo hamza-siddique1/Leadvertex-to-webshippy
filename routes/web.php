@@ -71,6 +71,10 @@ Route::get('sync/orders', function () {
     Artisan::call('app:sync-deliveo-statuses');
 });
 
+Route::get('generate-deliveo-invoices', function () {
+    Artisan::call('get-deliveo-pending-orders');
+});
+
 Route::post('/fake-deliveo/package/create', function (Request $request) {
     $randomNumber = rand(1000, 9999);
     $fakeId = "MXP2505026" . $randomNumber;
