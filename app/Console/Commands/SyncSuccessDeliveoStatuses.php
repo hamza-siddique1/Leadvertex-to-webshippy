@@ -29,7 +29,7 @@ class SyncSuccessDeliveoStatuses extends Command
         $orders_count = 0;
 
         foreach ($successfulOrders as $successfulOrder) {
-            if($orders_count > 20) break;
+            // if($orders_count > 20) break;
 
             if (empty($successfulOrder->received_by)) {
                 continue;

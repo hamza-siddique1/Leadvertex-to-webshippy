@@ -29,7 +29,7 @@ class SyncDeliveoStatuses extends Command
         $orders_count = 0;
 
         foreach ($failedOrders as $failedOrder) {
-            if($orders_count > 15) break;
+            //if($orders_count > 15) break;
 
             $deliveoId = $failedOrder->deliveo_id;
             $localOrder = Order::where('destination_id', $deliveoId)->first();
