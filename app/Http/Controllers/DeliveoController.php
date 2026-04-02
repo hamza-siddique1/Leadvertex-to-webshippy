@@ -100,7 +100,7 @@ class DeliveoController extends Controller
                     ]);
                 }
 
-                GenerateAndUploadInvoice::dispatch($order_id);
+                //GenerateAndUploadInvoice::dispatch($order_id);
 
                 $dateFolder = now()->format('d-m-Y');
                 $fileName = 'Invoice_' . $order_id . '.pdf';
