@@ -284,7 +284,7 @@ GQL;
         return $updatedOrder;
     }
 
-    protected function callGraphQL(string $query, array $variables = [])
+    public function callGraphQL(string $query, array $variables = [])
     {
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',

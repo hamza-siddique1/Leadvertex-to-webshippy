@@ -11,7 +11,7 @@ class SyncDeliveoStatuses extends Command
 {
     protected $signature = 'app:sync-deliveo-statuses';
 
-    protected $description = 'Command description';
+    protected $description = 'Change status to Returned';
 
     public function handle()
     {
