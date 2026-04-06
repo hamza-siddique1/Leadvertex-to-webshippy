@@ -24,6 +24,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get-deliveo-pending-orders')->everyFifteenMinutes()->between('10:00', '16:00');
         $schedule->command('salesrender:update-status')->everyMinute();
 
+    }
+
     /**
      * Register the commands for the application.
      *
