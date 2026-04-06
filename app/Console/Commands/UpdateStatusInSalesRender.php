@@ -13,7 +13,7 @@ class UpdateStatusInSalesRender extends Command
 
     public function handle()
     {
-        $orders = DeliveoSyncLog::where('sync_status', 'matched')->limit(1)->get();
+        $orders = DeliveoSyncLog::where('sync_status', 'matched')->limit(18)->get();
 
         if ($orders->isEmpty()) {
             $this->info("No pending orders to update.");
@@ -28,9 +28,9 @@ class UpdateStatusInSalesRender extends Command
 
             $salesRender->update_order_status($sales_render_id, 7); //7 = Delivered
 
-            // $order->update([
-            //     'sync_status' => 'updated',
-            // ]);
+            $order->update([
+                'sync_status' => 'updated',
+            ]);
 
             app('log')->channel('update_status')->info(sprintf("SR: %s - Deliveo: %s - ID: %s", $sales_render_id, $order->deliveo_id, $order->id));
 
