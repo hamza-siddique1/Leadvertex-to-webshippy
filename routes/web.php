@@ -71,6 +71,10 @@ Route::get('sync/orders', function () {
     Artisan::call('app:sync-deliveo-statuses');
 });
 
+Route::get('sync/sales-render-order-status', function () {
+    Artisan::call('salesrender:update-status');
+});
+
 Route::get('generate-deliveo-invoices', function () {
     Artisan::call('get-deliveo-pending-orders');
 });
