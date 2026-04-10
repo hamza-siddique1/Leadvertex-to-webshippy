@@ -37,7 +37,7 @@ class GetAllPendingDeliveoOrders extends Command
 
                 $order = DeliveoOrder::create([
                     'deliveo_id' => $apiOrder['deliveo_id'],
-                    'order_id' => $apiOrder['referenceid'],
+                    'order_id' => $apiOrder['tracking'] ?? $apiOrder['referenceid'] ?? '',
                     'last_modified' => $apiOrder['last_modified'] ?? null,
                     'payload' => $apiOrder,
                 ]);
@@ -62,7 +62,7 @@ class GetAllPendingDeliveoOrders extends Command
             } else {
                 if ($existing->last_modified != $apiOrder['last_modified']) {
                     $existing->update([
-                        'order_id' => $apiOrder['referenceid'],
+                        'order_id' => $apiOrder['tracking'] ?? $apiOrder['referenceid'] ?? '',
                         'last_modified' => $apiOrder['last_modified'],
                         'payload' => $apiOrder,
                     ]);
