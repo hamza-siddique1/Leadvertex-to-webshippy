@@ -155,7 +155,7 @@ class DeliveoController extends Controller
             'consignee_apartment' => $apartment ?? '',
             'consignee_phone' => $phoneRaw ?? '',
 
-            'delivery' => 89, //89: FámaFutár , 185: FoxPost //change to FámaFutár
+            'delivery' => 18, //89: FámaFutár , 185: FoxPost //change to FámaFutár, GLS:18
             'cod' => $totalCodValue,
             'tracking' => $webhookData['id'],
         ];
