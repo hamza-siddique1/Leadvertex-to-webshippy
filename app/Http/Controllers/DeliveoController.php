@@ -141,10 +141,10 @@ class DeliveoController extends Controller
 
         $transformedData = [
             'sender' => 'Supreme Pharmatech Europe s.r.o.',
-            'sender_country' => 'SK',
-            'sender_zip' => '94501',
-            'sender_city' => 'Komárno',
-            'sender_address' => 'Senný trh 3116/7',
+            'sender_country' => 'HU',
+            'sender_zip' => '1222',
+            'sender_city' => 'Budapest',
+            'sender_address' => 'Nagytétényi út 112 E3 MXP',
             'sender_phone' => '36304374237',
             'sender_email' => 'szabovk@supremepharmatech.hu',
             'consignee' => trim($firstName . ' ' . $lastName),
