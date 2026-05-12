@@ -108,4 +108,7 @@
             </div>
         </div>
     </div>
+
+    @include('telescope.api-log')
+
 @endsection

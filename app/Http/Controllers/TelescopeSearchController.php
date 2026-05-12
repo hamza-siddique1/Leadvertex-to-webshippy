@@ -32,9 +32,12 @@ class TelescopeSearchController extends Controller
             });
         }
 
-
         $results = $query->paginate(50);
 
-        return view('telescope.search', compact('results'));
+        $query= DB::table('api_logs')->WhereRaw("JSON_EXTRACT(`request_body`, '$.tracking') = ?", [$request->search]);
+
+        $api_logs = $query->paginate(50);
+
+        return view('telescope.search', compact('results', 'api_logs'));
     }
 }
