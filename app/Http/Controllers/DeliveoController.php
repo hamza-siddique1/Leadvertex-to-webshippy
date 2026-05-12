@@ -145,7 +145,7 @@ class DeliveoController extends Controller
             'sender_zip' => '1222',
             'sender_city' => 'Budapest',
             'sender_address' => 'Nagytétényi út 112 E3 MXP',
-            'sender_phone' => '36304374237',
+            'sender_phone' => '06 30 125 8868',
             'sender_email' => 'szabovk@supremepharmatech.hu',
             'consignee' => trim($firstName . ' ' . $lastName),
             'consignee_country' => $country ?? 'HU',
